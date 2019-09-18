@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope,$rootScope,spModal) {
+  /* widget controller */
+  var c = this;
+	c.data.noteId='';
+	$rootScope.$on('selectNote',function(event,data){
+		c.data.noteId=$rootScope.noteId;
+		c.data.action='getData';
+		c.server.update();
+	});
+	$rootScope.$on('createNote',function(event,data){
+		c.data.noteId=$rootScope.noteId;
+		c.data.note.title='';
+		c.data.note.note='';
+	});
+	$scope.updateNote=function(){
+		c.data.action='updateData';
+		c.server.update();
+	}
+	$scope.saveNote=function(){
+		c.data.action='saveData';
+		c.server.update().then(function(){
+		c.data.noteId=null;	
+		});		
+	}
+	$scope.cancelUpdate=function(){
+		c.data.noteId=null;
+	}
+	$scope.deleteNote=function(){
+		spModal.confirm("Are you sure?").then(function(confirmed){
+		if(confirmed){
+		c.data.action='deleteData';
+		c.server.update().then(function(){
+		c.data.noteId=null;	
+	  	});		
+	 	}	
+	});
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>notes_body</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
+        <name>Notes Body</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+  /* populate the 'data' object */
+  /* e.g., data.table = $sp.getValue('table'); */
+if(input&&input.noteId){
+	var note = new GlideRecord('x_snc_createnotes_note');
+	if(input.action=='saveData'){
+		  note.initialize();
+			note.setValue('title',input.note.title);
+			note.setValue('note',input.note.note);
+	  	note.setValue('user',gs.getUserID());
+			note.insert();
+			gs.addInfoMessage('Note saved');
+		}else{
+	if(note.get(input.noteId)){
+		if(input.action=='getData'){
+		data.note={};
+		$sp.getRecordValues(data.note,note,'title,note,sys_id');
+		}else if(input.action=='updateData'){
+		//	gs.addInfoMessage(input.note);
+			note.setValue('title',input.note.title);
+			note.setValue('note',input.note.note);
+			note.update();
+			gs.addInfoMessage('Note updated');
+			
+		}else if(input.action=='deleteData'){
+			note.deleteRecord();
+		}
+	
+	}
+		}
+	
+}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-09-16 18:39:19</sys_created_on>
+        <sys_id>51ef583bdb773300a8566a49489619bf</sys_id>
+        <sys_mod_count>47</sys_mod_count>
+        <sys_name>Notes Body</sys_name>
+        <sys_package display_value="CreateNotes" source="x_snc_createnotes">df5fd9a5090232007f44e1046c8ff69f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="CreateNotes">df5fd9a5090232007f44e1046c8ff69f</sys_scope>
+        <sys_update_name>sp_widget_51ef583bdb773300a8566a49489619bf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-09-18 18:30:26</sys_updated_on>
+        <template><![CDATA[<div class='panel panel-default' ng-show='c.data.noteId'>
+
+   <div class='row'>
+      <div class='col-md-12'>
+         <div class='panel-heading'>
+           <input class='form-control' ng-model='c.data.note.title'/>
+        <span  class='glyphicon glyphicon-trash pull-right'  ng-click='deleteNote()'></span>
+        </div >
+        
+      </div>
+  </div>
+ <div class='panel-body'>
+      <textarea class='form-control' ng-model='c.data.note.note'></textarea>
+ <div class='panel-body pull-right'>
+      <input type='button' class='btn btn-default' ng-click='cancelUpdate()' value='Cancel'/>
+   <input type='button' ng-show='c.data.noteId!=-1' class='btn btn-primary' value='Update' ng-click='updateNote()'/>
+    <input type='button' ng-show='c.data.noteId==-1' class='btn btn-primary' value='Save' ng-click='saveNote()'/>
+   </div>
+   
+  </div>
+  
+</div>]]></template>
+    </sp_widget>
+</record_update>
